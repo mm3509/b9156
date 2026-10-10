@@ -15,6 +15,23 @@ def daily_returns(prices):
     return prices.pct_change(fill_method=None)
 
 
+class BacktestMetrics:
+    def set_returns(self, returns):
+        self.returns = returns
+        self.compute_st_dev()
+        self.compute_annual_return()
+
+    def compute_st_dev(self):
+        daily_st_dev = self.returns.std()
+        self.annual_st_dev = daily_st_dev * (DAYS_IN_YEAR ** 0.5)
+
+    def compute_annual_return(self):
+        total_return = (1 + self.returns).prod() - 1
+        self.annual_return = utils.convert_interest_rate(total_return,
+                                                         len(self.returns.index),
+                                                         DAYS_IN_YEAR)
+
+
 class Backtester:
 
     def set_benchmark(self, ticker):
@@ -43,20 +60,22 @@ class Backtester:
         positions = self.strategy.generate_positions(self.prices)
         multiple_returns = positions * individual_returns  # Broadcasting
         strategy_returns = multiple_returns.sum(axis=1) / positions.sum(axis=1)
-        self.strategy_annual_return = average_annual_return(strategy_returns)
+        self.strategy_metrics = BacktestMetrics()
+        self.strategy_metrics.set_returns(strategy_returns)
 
     def compute_benchmark_returns(self):
         benchmark_df = utils.helper_download_prices_yahoo(self.benchmark_ticker, self.start, self.end)
         benchmark_series = benchmark_df[self.benchmark_ticker]
         returns = daily_returns(benchmark_series)
-        self.benchmark_annual_return = average_annual_return(returns)
+        self.benchmark_metrics = BacktestMetrics()
+        self.benchmark_metrics.set_returns(returns)
 
-    def run(self):
-        self.compute_benchmark_returns()
+    def run(self, run_benchmark=True):
+        if run_benchmark:
+            self.compute_benchmark_returns()
         self.compute_strategy_returns()
 
     def print_results(self):
-        print(f"Strategy annual return: {self.strategy_annual_return:.1%}")
-
+        print(f"Strategy annual return: {self.strategy_metrics.annual_return:.1%}")
         print(f"Benchmark ({self.benchmark_ticker})"
-              f" annual return: {self.benchmark_annual_return:.1%}")
+              f" annual return: {self.benchmark_metrics.annual_return:.1%}")
