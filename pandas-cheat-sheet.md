@@ -3,7 +3,7 @@
 Every Pandas tool used so far in the lectures and their code, grouped by task.
 "L4" means "introduced in lecture 4".
 
-NumPy has not appeared yet: Pandas does all the vector arithmetic, and a square
+NumPy has appeared only for `np.log` (lecture 2): Pandas does all the vector arithmetic, and a square
 root is written as `x ** 0.5`.
 
 ```python
