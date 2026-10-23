@@ -30,6 +30,9 @@ class BacktestMetrics:
         self.annual_return = utils.convert_interest_rate(total_return,
                                                          len(self.returns.index),
                                                          DAYS_IN_YEAR)
+    def print_metrics(self):
+        print(f"Annual return: {self.annual_return:.1%}")
+        print(f"Annual st-dev: {self.annual_st_dev:.1%}")
 
 
 class Backtester:
@@ -71,11 +74,16 @@ class Backtester:
         self.benchmark_metrics.set_returns(returns)
 
     def run(self, run_benchmark=True):
-        if run_benchmark:
+        self.run_benchmark = run_benchmark
+        if self.run_benchmark:
             self.compute_benchmark_returns()
         self.compute_strategy_returns()
 
     def print_results(self):
-        print(f"Strategy annual return: {self.strategy_metrics.annual_return:.1%}")
-        print(f"Benchmark ({self.benchmark_ticker})"
-              f" annual return: {self.benchmark_metrics.annual_return:.1%}")
+        print(f"Strategy results")
+        self.strategy_metrics.print_metrics()
+
+        if not self.run_benchmark:
+            return
+        print(f"Benchmark results ({self.benchmark_ticker})")
+        self.benchmark_strategy.print_metrics()
