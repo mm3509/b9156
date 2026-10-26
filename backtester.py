@@ -30,6 +30,32 @@ class BacktestMetrics:
         self.annual_return = utils.convert_interest_rate(total_return,
                                                          len(self.returns.index),
                                                          DAYS_IN_YEAR)
+
+    def compute_max_drawdown(self):
+        """
+        Sets self.max_drawdown, the largest fall from a peak of the strategy
+        value, as a fraction of that peak. The value starts at 1 before the
+        first return.
+
+        >>> metrics = BacktestMetrics()
+        >>> metrics.set_returns(pd.Series([0.10, 0.10]))
+        >>> print(f"{metrics.max_drawdown:.1%}")
+        0.0%
+        >>> metrics.set_returns(pd.Series([0.50, -0.50]))
+        >>> print(f"{metrics.max_drawdown:.1%}")
+        50.0%
+        >>> metrics.set_returns(pd.Series([-0.50, 0.20]))
+        >>> print(f"{metrics.max_drawdown:.1%}")
+        50.0%
+        >>> prices = pd.Series([100, 120, 90, 95, 130, 80])
+        >>> metrics.set_returns(daily_returns(prices))
+        >>> print(f"{metrics.max_drawdown:.1%}")
+        38.5%
+        """
+        # TODO: track the value (starting at 1) and the peak value so far, one return at a time,
+        # as in the MaxDrawdown class of lecture 10. Hint: the first return can be NaN.
+        pass
+
     def print_metrics(self):
         print(f"Annual return: {self.annual_return:.1%}")
         print(f"Annual st-dev: {self.annual_st_dev:.1%}")
@@ -86,4 +112,14 @@ class Backtester:
         if not self.run_benchmark:
             return
         print(f"Benchmark results ({self.benchmark_ticker})")
-        self.benchmark_strategy.print_metrics()
+        self.benchmark_metrics.print_metrics()
+
+
+if '__main__' == __name__:
+    import doctest
+    tests_failed, tests_run = doctest.testmod(optionflags=doctest.ELLIPSIS)
+    if 0 == tests_run:
+        print('Unable to run doc-tests, please see Miguel!')
+    else:
+        assert 0 == tests_failed, 'Some doc-tests failed, exiting...'
+        print('Your doc-tests pass, congratulations!')
